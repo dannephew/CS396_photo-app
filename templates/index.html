@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="/static/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+    {% include 'includes/navbar.html' %}
+
+    <main>
+        {% include 'includes/suggestions.html' %}
+
+
+
+        <section class="body">
+            {% include 'includes/stories.html' %}
+
+            {% include 'includes/cards.html' %}
+
+        </section>
+    </main>
+</body>
+</html>
+
+<!-- To add alt text for a post image: When a user is editing a post, there can be an Advanced Settings button at the bottom of the screen. If they click on it, the user would see a "Write Alt Text" button that allows them to write a description of what the post image is. Then, they can save it and continue publishing the post as usual. If the user wants to edit the alt text later on, there can be an "Edit Alt Text" button at the bottom of their post for them to make changes. -->

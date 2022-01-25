@@ -1,0 +1,20 @@
+<aside>
+    <section id="gibson">
+        <img src={{ user.get('image_url') }} class = "circle" id="gib_propic" alt="your profile pic"/>
+        <h1 id="gibsonjack"><span>{{ user.get('username') }}</span></h2>
+    </section>
+    <section id="suggestions">
+        <h3>Suggestions for you</h3>
+ 
+        {% for s in suggestions %}
+        <div id = "suggestions_div">
+            <img src={{ s.get('image_url') }}  class = "circle" id="suggest_propic" alt="profile picture for {{ s.get('username') }}"/>
+            <div id="a">
+                <h3>{{ s.get('username') }}</a></h3>
+                <h4>suggested for you</h2>
+            </div>
+        <div id="a"><a href="follow">follow</a></div>
+        </div>
+        {% endfor %}
+    </section>
+</aside>
