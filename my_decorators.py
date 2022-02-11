@@ -185,6 +185,7 @@ def id_is_integer_or_400_error(func):
             )
     return wrapper
 
+#Checks for 99999 errors
 def handle_db_insert_error(endpoint_function):
     
     def outer_function(self, *args, **kwargs):

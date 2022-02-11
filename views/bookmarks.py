@@ -52,7 +52,7 @@ class BookmarksListEndpoint(Resource):
         
         try: 
             bookmark = Bookmark(self.current_user.id, post_id)
-            
+            print("BOOKMARK: ", bookmark)
             #commit the new record to the database
             db.session.add(bookmark)
             db.session.commit()
