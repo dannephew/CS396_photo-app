@@ -3,7 +3,7 @@ from flask import Response, request
 from flask_restful import Resource
 from models import Following, User, db
 import json
-from follow_dec import check_duplicate, check_int, check_invalid_user
+from follow_dec import check_duplicate, check_int, check_invalid_user, DELETE_check_int, DELETE_check_invalid_follower
 # from my_decorators import id_is_integer_or_400_error, handle_db_insert_error
 
 def get_path():
@@ -43,9 +43,15 @@ class FollowingDetailEndpoint(Resource):
     def __init__(self, current_user):
         self.current_user = current_user
     
+    @DELETE_check_int
+    @DELETE_check_invalid_follower
     def delete(self, id):
-        # Your code here
-        return Response(json.dumps({}), mimetype="application/json", status=200)
+        Following.query.filter_by(id=id).delete()        
+        db.session.commit()
+        serialized_data = {
+            'message': 'Comment {0} successfully deleted.'.format(id)
+        }
+        return Response(json.dumps(serialized_data), mimetype="application/json", status=200)
 
 
 def initialize_routes(api):

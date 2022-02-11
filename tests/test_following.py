@@ -160,10 +160,10 @@ if __name__ == '__main__':
         TestFollowingListEndpoint('test_following_post_missing_user_id_400'), 
 
         # # DELETE
-        # TestFollowingDetailEndpoint('test_following_delete_valid_200'),
-        # TestFollowingDetailEndpoint('test_following_delete_invalid_id_format_400'),
-        # TestFollowingDetailEndpoint('test_following_delete_invalid_id_404'),
-        # TestFollowingDetailEndpoint('test_following_delete_unauthorized_id_404') 
+        TestFollowingDetailEndpoint('test_following_delete_valid_200'),
+        TestFollowingDetailEndpoint('test_following_delete_invalid_id_format_400'),
+        TestFollowingDetailEndpoint('test_following_delete_invalid_id_404'),
+        TestFollowingDetailEndpoint('test_following_delete_unauthorized_id_404') 
     ])
 
     unittest.TextTestRunner(verbosity=2).run(suite)

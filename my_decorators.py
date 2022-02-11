@@ -302,6 +302,7 @@ def DELETE_check_ownership_of_bookmark(endpoint_function):
             return Response(json.dumps(response_obj), mimetype="application/json", status=404)
     return outer_func_w_security_checks
 
+
 #Cannot use can_view_post (bc inserting bookmark id) and also don't need to. 
 # def DELETE_secure_bookmark(endpoint_function):
     
