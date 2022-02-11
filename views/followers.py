@@ -12,7 +12,7 @@ class FollowerListEndpoint(Resource):
     
     def get(self):
         # Your code here
-        # get all user_ids where following_id == current_user
+        # get all user_ids where following_id (id of person you following) == current_user
         following = Following.query.filter_by(following_id=self.current_user.id).all()
         
         following_list_of_dictionaries = [

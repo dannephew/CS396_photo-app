@@ -150,7 +150,7 @@ if __name__ == '__main__':
 
         # GET (List)
         TestFollowingListEndpoint('test_following_get_check_data_structure'),   
-        # TestFollowingListEndpoint('test_following_get_check_if_query_correct'),
+        TestFollowingListEndpoint('test_following_get_check_if_query_correct'),
 
         # POST
         # TestFollowingListEndpoint('test_following_post_valid_request_201'),
