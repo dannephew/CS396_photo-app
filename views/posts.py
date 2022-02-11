@@ -4,6 +4,7 @@ from models import Post, User, db
 from . import can_view_post, get_authorized_user_ids
 import json
 from sqlalchemy import and_
+from post_dec import check_int, check_invalid_unauthorized
 
 def get_path():
     return request.host_url + 'api/posts/'
@@ -19,13 +20,37 @@ class PostListEndpoint(Resource):
         # 1. No security implemented; 
         # 2. limit is hard coded (versus coming from the query parameter)
         # 3. No error checking
-        data = Post.query.limit(20).all()
+        
+        #get all posts of user
+        limit = request.args.get('limit')
+        print("FIRST LIMIT: ", limit)
+        if limit:
+            try:
+                limit = int(limit)
+            except:
+                return Response(json.dumps({'message': 'Limit must be an integer between 1 and 50'}), mimetype="application/json", status=400)
+            if limit > 50 or limit < 1:
+                return Response(json.dumps({'message': 'Limit must be an integer between 1 and 50'}), mimetype="application/json", status=400)
+        else:
+            limit = 20
+        print("LIMIT: ", limit)
+        posts = Post.query.filter_by(user_id=self.current_user.id).order_by(Post.pub_date.desc()).limit(limit).all()
 
-        data = [
-            item.to_dict() for item in data
+        # posts = posts.limit(3)
+        print("POSTS: ", posts)
+        #print(bookmarks)
+        
+        # convert list of Bookmark model to a list of dictionaries
+        posts_list_of_dictionaries = [
+            post.to_dict() for post in posts
         ]
-        return Response(json.dumps(data), mimetype="application/json", status=200)
+        
+        # data = Post.query.limit(20).all()
 
+        # data = [
+        #     item.to_dict() for item in data
+        # ]
+        return Response(json.dumps(posts_list_of_dictionaries), mimetype="application/json", status=200)
 
 
     def post(self):
@@ -33,8 +58,11 @@ class PostListEndpoint(Resource):
         image_url = body.get('image_url')
         caption = body.get('caption')
         alt_text = body.get('alt_text')
+        print(image_url)
+        print(caption, alt_text)
         user_id = self.current_user.id # id of the user who is logged in
-        
+        if not image_url:
+            return Response(json.dumps({'message': 'No image'}), mimetype="application/json", status=400)
         # create post:
         post = Post(image_url, user_id, caption, alt_text)
         db.session.add(post)
@@ -46,6 +74,8 @@ class PostDetailEndpoint(Resource):
     def __init__(self, current_user):
         self.current_user = current_user
         
+    @check_int
+    @check_invalid_unauthorized
     def patch(self, id):
         post = Post.query.get(id)
 

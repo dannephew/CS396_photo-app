@@ -38,8 +38,9 @@ class TestPostListEndpoint(unittest.TestCase):
 
     def test_posts_get_bad_limit_argument_handled(self):
         response = requests.get(root_url + '/api/posts?limit=80')
+        print(response.text)
         self.assertEqual(response.status_code, 400)
-
+        
         response = requests.get(root_url + '/api/posts?limit=abc')
         self.assertEqual(response.status_code, 400)
 
@@ -108,10 +109,13 @@ class TestPostListEndpoint(unittest.TestCase):
         # and check that it's gone:
         self.assertEqual(utils.get_post_by_id(new_post.get('id')), [])
 
+#QUESTION
     def test_post_post_bad_data_400_error(self):
         url = '{0}/api/posts'.format(root_url)
         
         response = requests.post(url, json={})
+            #no input
+        # print(response.text)
         self.assertEqual(response.status_code, 400)
     
 
@@ -132,7 +136,7 @@ class TestPostDetailEndpoint(unittest.TestCase):
         
         response = requests.patch(url, json=body)
         new_post = response.json()
-        # print(new_post)
+        print(new_post)
         self.assertEqual(response.status_code, 200)
 
         # check that the values are in the returned json:
@@ -274,22 +278,22 @@ if __name__ == '__main__':
         TestPostListEndpoint('test_post_post_image_only'),                  # post (create)
         TestPostListEndpoint('test_post_post_bad_data_400_error'),          # post (create)
 
-        # Detail Endpoint Tests
+        # # Detail Endpoint Tests
         TestPostDetailEndpoint('test_post_patch'),                          # patch (update)
         TestPostDetailEndpoint('test_post_patch_blanks_not_overwritten'),   # patch (update)
         TestPostDetailEndpoint('test_post_patch_invalid_id_400'),           # patch (update)
         TestPostDetailEndpoint('test_post_patch_id_does_not_exist_404'),    # patch (update)
         TestPostDetailEndpoint('test_post_patch_unauthorized_id_404'),      # patch (update)
         
-        TestPostDetailEndpoint('test_post_delete'),                         # delete
-        TestPostDetailEndpoint('test_post_delete_invalid_id_400'),          # delete
-        TestPostDetailEndpoint('test_post_delete_id_does_not_exist_404'),   # delete
-        TestPostDetailEndpoint('test_post_delete_unauthorized_id_404'),     # delete
+        # TestPostDetailEndpoint('test_post_delete'),                         # delete
+        # TestPostDetailEndpoint('test_post_delete_invalid_id_400'),          # delete
+        # TestPostDetailEndpoint('test_post_delete_id_does_not_exist_404'),   # delete
+        # TestPostDetailEndpoint('test_post_delete_unauthorized_id_404'),     # delete
 
-        TestPostDetailEndpoint('test_post_get'),                            # get (individual)
-        TestPostDetailEndpoint('test_post_get_invalid_id_400'),             # get (individual) 
-        TestPostDetailEndpoint('test_post_get_id_does_not_exist_404'),      # get (individual)
-        TestPostDetailEndpoint('test_post_get_unauthorized_id_404')         # get (individual)
+        # TestPostDetailEndpoint('test_post_get'),                            # get (individual)
+        # TestPostDetailEndpoint('test_post_get_invalid_id_400'),             # get (individual) 
+        # TestPostDetailEndpoint('test_post_get_id_does_not_exist_404'),      # get (individual)
+        # TestPostDetailEndpoint('test_post_get_unauthorized_id_404')         # get (individual)
     ])
 
     unittest.TextTestRunner(verbosity=2).run(suite)

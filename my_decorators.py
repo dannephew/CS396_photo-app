@@ -213,12 +213,13 @@ def check_duplicate(endpoint_func):
         post_id = body.get('post_id')
         #get all post_ids of user
         print("POST_ID: ", post_id)
+        bookmark_id = body.get('id')
         bookmarks = Bookmark.query.filter_by(user_id=self.current_user.id).all()
         print("ALL BOOKMARKS: ", bookmarks)
         for b in bookmarks:
             print("INSIDE FOR LOOP")
             print("Bookmark: ", b.post_id)
-            if b.post_id == post_id:
+            if b.id == bookmark_id:
                 print("DUPLICATE FOUND")
                 response_obj = {
                 'message': 'You have already bookmarked post_id={0}'.format(post_id)
