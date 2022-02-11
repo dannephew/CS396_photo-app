@@ -51,3 +51,49 @@ def missing_text(endpoint):
             }
             return Response(json.dumps(response_obj), mimetype="application/json", status=400)
     return wrapper
+
+def DELETE_check_int(endpoint):
+    def wrapper(self, id):
+        try: 
+            int(id)
+            return endpoint(self, id)
+        except:
+            return Response(
+                json.dumps({'message': '{0} must be an integer.'.format(id)}), 
+                mimetype="application/json", 
+                status=400
+            )
+    return wrapper
+            
+def DELETE_check_invalid_unauthorized(endpoint):
+    def wrapper(self, id):
+        print("CHECK INVALID UNAHTORIZED")
+            #this is the comment id
+            #user must have created comment 
+            #find all of user's comments, then see if there is a match 
+            #OR find the owner of the commend, and see if it matches current user
+        # Bookmark.query.filter_by(user_id=self.current_user.id).all()
+        
+        # comment = Comment.query.filter_by(id = id).all()
+        # print("COMMENT: ", comment)
+        # print("COMMENT.USER_ID: ", comment.user_id)
+        
+        # if comment.user_id == self.current_user.id:
+        #     # print("PASSED SECURE_BOOKMARK CHECK")
+        #     return endpoint(self, id)
+        
+        user_comments = Comment.query.filter_by(user_id = self.current_user.id).all()
+        print("CURR COMMENT ID: ", id)
+        print("USER COMMENTS: ", user_comments)
+        for c in user_comments:
+            print("CHECKING COMMENT ID: ", c.id)
+            if int(c.id) == int(id):
+                print("found a match")
+                return endpoint(self, id)
+            print("not a match")
+        else:
+            response_obj = {
+                'message': 'Either the post doesn\'t exist, or you don\'t have access to post_id={0}'.format(id)
+            }
+            return Response(json.dumps(response_obj), mimetype="application/json", status=404)
+    return wrapper

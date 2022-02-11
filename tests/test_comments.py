@@ -121,10 +121,10 @@ if __name__ == '__main__':
         TestCommentListEndpoint('test_comment_post_missing_text_400'),
 
         # # DELETE Tests:
-        # TestCommentDetailEndpoint('test_comment_delete_valid_200'),
-        # TestCommentDetailEndpoint('test_comment_delete_invalid_id_format_400'),
-        # TestCommentDetailEndpoint('test_comment_delete_invalid_id_404'),
-        # TestCommentDetailEndpoint('test_comment_delete_unauthorized_id_404'),
+        TestCommentDetailEndpoint('test_comment_delete_valid_200'),
+        TestCommentDetailEndpoint('test_comment_delete_invalid_id_format_400'),
+        TestCommentDetailEndpoint('test_comment_delete_invalid_id_404'),
+        TestCommentDetailEndpoint('test_comment_delete_unauthorized_id_404'),
         
     ])
 

@@ -93,11 +93,11 @@ class BookmarkDetailEndpoint(Resource):
         #     return Response(json.dumps(response_obj), mimetype="application/json", status=400)
         
         # bookmark = Bookmark.query.get(id)
-        print("delete called")
+        # print("delete called")
         # try: 
             # print("TRYING TO DELETE: ", Bookmark.query.filter_by(id=id))
             # can_view_post()
-        print("try")
+        # print("try")
         Bookmark.query.filter_by(id=id).delete()
         db.session.commit()
         serialized_data = {

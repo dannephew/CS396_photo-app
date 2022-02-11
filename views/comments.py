@@ -4,7 +4,7 @@ from . import can_view_post
 import json
 from models import db, Comment, Post
 from my_decorators import id_is_integer_or_400_error, handle_db_insert_error
-from comment_decorators import secure_comment, missing_text
+from comment_decorators import secure_comment, missing_text, DELETE_check_int, DELETE_check_invalid_unauthorized
 
 class CommentListEndpoint(Resource):
 
@@ -40,9 +40,20 @@ class CommentDetailEndpoint(Resource):
     def __init__(self, current_user):
         self.current_user = current_user
   
+    # @id_is_integer_or_400_error
+    # @handle_db_insert_error
+    # @missing_text
+    @DELETE_check_int
+    @DELETE_check_invalid_unauthorized
     def delete(self, id):
-        # Your code here
-        return Response(json.dumps({}), mimetype="application/json", status=200)
+        
+        Comment.query.filter_by(id=id).delete()
+        db.session.commit()
+        serialized_data = {
+            'message': 'Comment {0} successfully deleted.'.format(id)
+        }
+        
+        return Response(json.dumps(serialized_data), mimetype="application/json", status=200)
 
 
 def initialize_routes(api):
