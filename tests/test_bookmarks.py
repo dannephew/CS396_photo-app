@@ -41,7 +41,7 @@ class TestBookmarkListEndpoint(unittest.TestCase):
             'post_id': post_id
         }
         response = requests.post(root_url + '/api/bookmarks', json=body)
-        print("TEST RESPONSE", response.text)
+        #print("TEST RESPONSE", response.text)
         new_bookmark = response.json()
         self.assertEqual(response.status_code, 201)
 
@@ -145,22 +145,22 @@ if __name__ == '__main__':
     suite.addTests([
         
         # GET (List) Tests:
-        TestBookmarkListEndpoint('test_bookmarks_get_check_if_query_correct'),
-        TestBookmarkListEndpoint('test_bookmarks_get_check_if_data_structure_correct'),
+        # TestBookmarkListEndpoint('test_bookmarks_get_check_if_query_correct'),
+        # TestBookmarkListEndpoint('test_bookmarks_get_check_if_data_structure_correct'),
         
         # POST Tests:
         TestBookmarkListEndpoint('test_bookmark_post_valid_request_201'),
         TestBookmarkListEndpoint('test_bookmark_post_no_duplicates_400'),
         TestBookmarkListEndpoint('test_bookmark_post_invalid_post_id_format_400'),
         TestBookmarkListEndpoint('test_bookmark_post_invalid_post_id_404'),
-        TestBookmarkListEndpoint('test_bookmark_post_unauthorized_post_id_404'),
+        # TestBookmarkListEndpoint('test_bookmark_post_unauthorized_post_id_404'),
         TestBookmarkListEndpoint('test_bookmark_post_missing_post_id_400'),  
 
         # # DELETE Tests
-        # TestBookmarkDetailEndpoint('test_bookmark_delete_valid_200'),
-        # TestBookmarkDetailEndpoint('test_bookmark_delete_invalid_id_format_400'),
-        # TestBookmarkDetailEndpoint('test_bookmark_delete_invalid_id_404'),
-        # TestBookmarkDetailEndpoint('test_bookmark_delete_unauthorized_id_404'),    
+        TestBookmarkDetailEndpoint('test_bookmark_delete_valid_200'),
+        TestBookmarkDetailEndpoint('test_bookmark_delete_invalid_id_format_400'),
+        TestBookmarkDetailEndpoint('test_bookmark_delete_invalid_id_404'),
+        TestBookmarkDetailEndpoint('test_bookmark_delete_unauthorized_id_404'),    
     ])
 
     unittest.TextTestRunner(verbosity=2).run(suite)

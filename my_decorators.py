@@ -194,7 +194,7 @@ def handle_db_insert_error(endpoint_function):
         except:
             import sys
             db_message = str(sys.exc_info()[1]) # stores DB error message
-            print(db_message)                   # logs it to the console
+            #print(db_message)                   # logs it to the console
             message = 'Database Insert error. Make sure your post data is valid.'
             post_data = request.get_json()
             post_data['user_id'] = self.current_user.id
@@ -203,8 +203,29 @@ def handle_db_insert_error(endpoint_function):
                 'db_message': db_message,
                 'post_data': post_data 
             }
-            return Response(json.dumps(response_obj), mimetype="application/json", status=400)
+            return Response(json.dumps(response_obj), mimetype="application/json", status=404)
     return outer_function
+
+def check_duplicate(endpoint_func):
+    def security_check(self):
+        body = request.get_json()
+        post_id = body.get('post_id')
+        #get all post_ids of user
+        print("POST_ID: ", post_id)
+        bookmarks = Bookmark.query.filter_by(user_id=self.current_user.id).all()
+        print("ALL BOOKMARKS: ", bookmarks)
+        for b in bookmarks:
+            print("INSIDE FOR LOOP")
+            print("Bookmark: ", b.post_id)
+            if b.post_id == post_id:
+                print("DUPLICATE FOUND")
+                response_obj = {
+                'message': 'You have already bookmarked post_id={0}'.format(post_id)
+            }
+                return Response(json.dumps(response_obj), mimetype="application/json", status=400)
+        return endpoint_func(self)
+    print("DUPLICATE NOT FOUND")
+    return security_check
 
 def secure_bookmark(endpoint_function):
     def outer_func_w_security_checks(self):
@@ -213,8 +234,9 @@ def secure_bookmark(endpoint_function):
         body = request.get_json()
         post_id = body.get('post_id')
         # print(post_id)
-        print("Can_view_post result: ", can_view_post(post_id, self.current_user))
+        #print("Can_view_post result: ", can_view_post(post_id, self.current_user))
         if can_view_post(post_id, self.current_user):
+            print("PASSED SECURE_BOOKMARK CHECK")
             return endpoint_function(self)
         else:
             response_obj = {
@@ -225,14 +247,76 @@ def secure_bookmark(endpoint_function):
 
 def check_ownership_of_bookmark(endpoint_function):
     def outer_func_w_security_checks(self, id):
-        print(id)
+        #print(id)
+        print("CHECKING OWNERSHIP")
         bookmark = Bookmark.query.get(id)
+        print("Bookmark: ", bookmark)
         if bookmark.user_id == self.current_user.id:
-            
+            print("BOOKMARK INSIDE USER LIST")
             return endpoint_function(self, id)
         else:
+            print("NO MATCH")
             response_obj = {
-                'message': 'You did not create boomark id={0}'.format(id)
+                'message': 'You did not create bookmark id={0}'.format(id)
+            }
+            return Response(json.dumps(response_obj), mimetype="application/json", status=404)
+    return outer_func_w_security_checks
+
+def DELETE_id_is_integer_or_400_error(endpoint_func):
+    def security_check(self, id):
+        print("ID: ", id)
+        try: 
+            #this is the bookmark id
+            int(id)
+            print("int(): ", int(id))
+            return endpoint_func(self, id)
+        except: 
+            response_obj = {
+                'message': '{0} is not an int'.format(id)
             }
             return Response(json.dumps(response_obj), mimetype="application/json", status=400)
+    return security_check
+    
+    
+
+def DELETE_check_ownership_of_bookmark(endpoint_function):
+    def outer_func_w_security_checks(self, id):
+        #print(id)
+        print("CHECKING OWNERSHIP")
+        bookmark = Bookmark.query.get(id)
+        if bookmark == None: 
+            print("Bookmark == None")
+            response_obj = {
+                'message': 'You did not create bookmark id={0}'.format(id)
+            }
+            return Response(json.dumps(response_obj), mimetype="application/json", status=404)
+        if bookmark.user_id == self.current_user.id:
+            print("BOOKMARK INSIDE USER LIST")
+            return endpoint_function(self, id)
+        else:
+            print("NO MATCH")
+            response_obj = {
+                'message': 'You did not create bookmark id={0}'.format(id)
+            }
+            return Response(json.dumps(response_obj), mimetype="application/json", status=404)
     return outer_func_w_security_checks
+
+#Cannot use can_view_post (bc inserting bookmark id) and also don't need to. 
+# def DELETE_secure_bookmark(endpoint_function):
+    
+#     def outer_func_w_security_checks(self, id):
+#         #check for security and only execute func if security check passes
+#         # print('PRINT: About to issue post endpoint function.')
+#         #print("Can_view_post result: ", can_view_post(post_id, self.current_user))
+#         print("DELETE: CHECKING SECURE BOOKMARK")
+#         if can_view_post(id, self.current_user):
+#                 #we're using the bookmark id, so cannot use can_view_post
+#             print("INSIDE IF CAN_VIEW_POST")
+#             return endpoint_function(self)
+#         else:
+#             print("CANNOT VIEW POST")
+#             response_obj = {
+#                 'message': 'You don\'t have access to post_id={0}'.format(id)
+#             }
+#             return Response(json.dumps(response_obj), mimetype="application/json", status=404)
+#     return outer_func_w_security_checks

@@ -3,7 +3,7 @@ from flask_restful import Resource
 from models import Bookmark, db
 import json
 
-from my_decorators import id_is_integer_or_400_error, secure_bookmark, handle_db_insert_error, check_ownership_of_bookmark
+from my_decorators import id_is_integer_or_400_error, secure_bookmark, handle_db_insert_error, check_ownership_of_bookmark, DELETE_id_is_integer_or_400_error, check_duplicate, DELETE_check_ownership_of_bookmark
 from . import can_view_post
 
 def get_path():
@@ -32,6 +32,7 @@ class BookmarksListEndpoint(Resource):
 
 
     @id_is_integer_or_400_error
+    @check_duplicate
     @secure_bookmark
     #     #catches errors so we can only bookmark posts of people we're following or our own
     # @handle_db_insert_error
@@ -78,15 +79,44 @@ class BookmarkDetailEndpoint(Resource):
     def __init__(self, current_user):
         self.current_user = current_user
     
-    @check_ownership_of_bookmark
+    @DELETE_id_is_integer_or_400_error
+    @DELETE_check_ownership_of_bookmark
     def delete(self, id):
-        # Your code here
+        # get post id 
+        # check if post is made by user
+        # try: 
+        #     int(id)
+        # except: 
+        #     response_obj = {
+        #         'message': '{0} is not an int'.format(id)
+        #     }
+        #     return Response(json.dumps(response_obj), mimetype="application/json", status=400)
+        
         # bookmark = Bookmark.query.get(id)
+        print("delete called")
+        # try: 
+            # print("TRYING TO DELETE: ", Bookmark.query.filter_by(id=id))
+            # can_view_post()
+        print("try")
         Bookmark.query.filter_by(id=id).delete()
         db.session.commit()
         serialized_data = {
             'message': 'Bookmark {0} successfully deleted.'.format(id)
         }
+        # except: 
+        #     print("except")
+        #     import sys
+        #     db_message = str(sys.exc_info()[1]) # stores DB error message
+        #     print(db_message)                   # logs it to the console
+        #     message = 'Database Insert error. Make sure your post data is valid.'
+        #     post_data = request.get_json() #show user what they posted
+        #     post_data['user_id'] = self.current_user.id #what the current user id is
+        #     response_obj = {
+        #         'message': message, 
+        #         'db_message': db_message,
+        #         'post_data': post_data #return everything 
+        #     }
+        #     return Response(json.dumps(response_obj), mimetype="application/json", status=400)
         return Response(json.dumps(serialized_data), mimetype="application/json", status=200)
 
 
