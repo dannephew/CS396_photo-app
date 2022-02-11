@@ -13,10 +13,10 @@ class FollowerListEndpoint(Resource):
     def get(self):
         # Your code here
         # get all user_ids where following_id == current_user
-        following = Following.query.filter_by(user_id=self.current_user.id).all()
+        following = Following.query.filter_by(following_id=self.current_user.id).all()
         
         following_list_of_dictionaries = [
-            f.to_dict() for f in following
+            f.to_dict_follower() for f in following
         ]
         
         return Response(json.dumps(following_list_of_dictionaries), mimetype="application/json", status=200)
