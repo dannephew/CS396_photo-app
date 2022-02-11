@@ -1,7 +1,10 @@
+from tabnanny import check
 from flask import Response, request
 from flask_restful import Resource
 from models import Following, User, db
 import json
+from follow_dec import check_duplicate, check_int, check_invalid_user
+# from my_decorators import id_is_integer_or_400_error, handle_db_insert_error
 
 def get_path():
     return request.host_url + 'api/posts/'
@@ -19,9 +22,21 @@ class FollowingListEndpoint(Resource):
         ]
         return Response(json.dumps(following_list_of_dictionaries), mimetype="application/json", status=200)
 
+    # @id_is_integer_or_400_error
+    @check_duplicate
+    @check_int
+    @check_invalid_user
     def post(self):
-        # Your code here
-        return Response(json.dumps({}), mimetype="application/json", status=201)
+        #Follow someone new
+        body = request.get_json()
+        follower_id = body.get('user_id')
+        
+        follow = Following(self.current_user.id, follower_id)
+        # print("COMMENT: ", comment)
+            #commit the new record to the database
+        db.session.add(follow)
+        db.session.commit()
+        return Response(json.dumps(follow.to_dict_following()), mimetype="application/json", status=201)
 
 
 class FollowingDetailEndpoint(Resource):
