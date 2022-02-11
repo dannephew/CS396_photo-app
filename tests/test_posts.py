@@ -285,15 +285,15 @@ if __name__ == '__main__':
         TestPostDetailEndpoint('test_post_patch_id_does_not_exist_404'),    # patch (update)
         TestPostDetailEndpoint('test_post_patch_unauthorized_id_404'),      # patch (update)
         
-        # TestPostDetailEndpoint('test_post_delete'),                         # delete
-        # TestPostDetailEndpoint('test_post_delete_invalid_id_400'),          # delete
-        # TestPostDetailEndpoint('test_post_delete_id_does_not_exist_404'),   # delete
-        # TestPostDetailEndpoint('test_post_delete_unauthorized_id_404'),     # delete
+        TestPostDetailEndpoint('test_post_delete'),                         # delete
+        TestPostDetailEndpoint('test_post_delete_invalid_id_400'),          # delete
+        TestPostDetailEndpoint('test_post_delete_id_does_not_exist_404'),   # delete
+        TestPostDetailEndpoint('test_post_delete_unauthorized_id_404'),     # delete
 
-        # TestPostDetailEndpoint('test_post_get'),                            # get (individual)
-        # TestPostDetailEndpoint('test_post_get_invalid_id_400'),             # get (individual) 
-        # TestPostDetailEndpoint('test_post_get_id_does_not_exist_404'),      # get (individual)
-        # TestPostDetailEndpoint('test_post_get_unauthorized_id_404')         # get (individual)
+        TestPostDetailEndpoint('test_post_get'),                            # get (individual)
+        TestPostDetailEndpoint('test_post_get_invalid_id_400'),             # get (individual) 
+        TestPostDetailEndpoint('test_post_get_id_does_not_exist_404'),      # get (individual)
+        TestPostDetailEndpoint('test_post_get_unauthorized_id_404')         # get (individual)
     ])
 
     unittest.TextTestRunner(verbosity=2).run(suite)

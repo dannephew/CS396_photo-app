@@ -4,7 +4,7 @@ from models import Post, User, db
 from . import can_view_post, get_authorized_user_ids
 import json
 from sqlalchemy import and_
-from post_dec import check_int, check_invalid_unauthorized
+from post_dec import check_int, check_invalid_unauthorized, DEL_check_int, DEL_check_invalid_unauthorized
 
 def get_path():
     return request.host_url + 'api/posts/'
@@ -93,6 +93,8 @@ class PostDetailEndpoint(Resource):
         db.session.commit()        
         return Response(json.dumps(post.to_dict()), mimetype="application/json", status=200)
     
+    @DEL_check_int
+    @DEL_check_invalid_unauthorized
     def delete(self, id):
 
         # a user can only delete their own post:
@@ -108,6 +110,8 @@ class PostDetailEndpoint(Resource):
         }
         return Response(json.dumps(serialized_data), mimetype="application/json", status=200)
 
+    @DEL_check_int
+    @DEL_check_invalid_unauthorized
     def get(self, id):
         post = Post.query.get(id)
 
