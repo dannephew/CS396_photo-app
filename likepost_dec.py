@@ -12,7 +12,7 @@ def check_duplicate(endpoint):
         for post in liked_posts:
             if int(post.post_id) == int(post_id):
                 response_obj = {
-                'message': 'You already follow follwer_id={0}'.format(post_id)
+                'message': 'You already follow follower_id={0}'.format(post_id)
                 }
                 return Response(json.dumps(response_obj), mimetype="application/json", status=400)
         
@@ -45,6 +45,44 @@ def check_invalid_unauthorized(endpoint):
         if can_view_post(post_id, self.current_user):
             return endpoint(self, post_id)
         else: 
+            response_obj = {
+                'message': 'You don\'t have access to post_id={0}'.format(post_id)
+            }
+            return Response(json.dumps(response_obj), mimetype="application/json", status=404)
+    return wrapper
+
+def DEL_check_int(endpoint):
+    def wrapper(self, post_id, id):
+        # print("HIIIIIIII")
+        try:
+            #make sure post_id is an int
+            # body = request.get_json()
+            # post_id = body.get('post_id')
+            print("POST_ID: ", post_id)
+            int(post_id)
+            return endpoint(self, post_id, id)
+            # print("IS INT?", int(post_id))
+            # int(post_id)
+            # return endpoint(self, post_id)
+        except:
+            response_obj = {
+            'message': '{0} is not an int'.format(post_id)
+            }
+            return Response(json.dumps(response_obj), mimetype="application/json", status=400)
+    return wrapper
+
+def DEL_check_invalid_unauthorized(endpoint):
+    print("CHECKING INVALID UNAHTORIZED")
+    def wrapper(self, post_id, id):
+                        #id = like id
+        print("HIIII")
+        #make sure user has access to it by checking it is a post they've already liked
+        liked_posts = LikePost.query.filter_by(user_id=self.current_user.id).all()
+        for like in liked_posts:
+            if int(like.id) == int(id):
+                return endpoint(self, post_id, id)
+        else: 
+            print("Cannot view post")
             response_obj = {
                 'message': 'You don\'t have access to post_id={0}'.format(post_id)
             }
