@@ -1,0 +1,22 @@
+{
+  "name": "photo-app-hw3",
+  "version": "1.0.0",
+  "description": "To install dependencies, navigate to your `photo-app` directory on your command line and issue the following commands:",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dannephew/CS396_photo-app.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/dannephew/CS396_photo-app/issues"
+  },
+  "homepage": "https://github.com/dannephew/CS396_photo-app#readme"
+}
