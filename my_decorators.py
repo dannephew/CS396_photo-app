@@ -237,6 +237,7 @@ def secure_bookmark(endpoint_function):
         # print(post_id)
         #print("Can_view_post result: ", can_view_post(post_id, self.current_user))
         if can_view_post(post_id, self.current_user):
+            ######################
             print("PASSED SECURE_BOOKMARK CHECK")
             return endpoint_function(self)
         else:

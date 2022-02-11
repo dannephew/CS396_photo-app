@@ -1,17 +1,31 @@
+from tabnanny import check
 from flask import Response
 from flask_restful import Resource
 from models import LikePost, db
 import json
 from . import can_view_post
+from likepost_dec import check_duplicate, check_int, check_invalid_unauthorized
+
 
 class PostLikesListEndpoint(Resource):
 
     def __init__(self, current_user):
         self.current_user = current_user
     
-    def post(self, post_id):
-        # Your code here
-        return Response(json.dumps({}), mimetype="application/json", status=201)
+    
+    @check_int
+    @check_invalid_unauthorized
+    @check_duplicate
+    def post(self, post_id):        
+        #user_id, post_id
+        # try: 
+            # int(post_id)
+        like = LikePost(self.current_user.id, post_id)
+        db.session.add(like)
+        db.session.commit()        
+        return Response(json.dumps(like.to_dict()), mimetype="application/json", status=201)
+
+        
 
 class PostLikesDetailEndpoint(Resource):
 
