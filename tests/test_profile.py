@@ -13,6 +13,7 @@ class TestProfileEndpoint(unittest.TestCase):
     def test_profile_get_check_if_query_correct(self):
         response = requests.get('{0}/api/profile'.format(root_url))
         profile = response.json()
+        print("PROFILE: ", profile)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(profile.get('id'), self.current_user.get('id'))
         self.assertEqual(profile.get('first_name'), self.current_user.get('first_name'))

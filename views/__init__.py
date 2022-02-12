@@ -1,4 +1,4 @@
-from models import db, Following, Post
+from models import db, Following, Post, Story
 from sqlalchemy import and_
 
 '''
@@ -32,3 +32,12 @@ def can_view_post(post_id, user):
         return False
     return True
         
+def can_view_story(story_id, user):
+    # find user_ids that the user can follow (including the user themselves)
+    auth_users_ids = get_authorized_user_ids(user)
+
+    # query for all the posts that are owned by the user:
+    post = Story.query.filter(and_(Story.id==story_id, Story.user_id.in_(auth_users_ids))).first()
+    if not post:
+        return False
+    return True
