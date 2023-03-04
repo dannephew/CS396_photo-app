@@ -12,7 +12,7 @@ def check_duplicate(endpoint):
         for post in liked_posts:
             if int(post.post_id) == int(post_id):
                 response_obj = {
-                'message': 'You already follow follower_id={0}'.format(post_id)
+                'message': 'You already liked like_id={0}'.format(post_id)
                 }
                 return Response(json.dumps(response_obj), mimetype="application/json", status=400)
         

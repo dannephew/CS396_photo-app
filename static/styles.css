@@ -21,6 +21,14 @@ main {
     margin-left: 100px;
 }
 
+.hidden {
+    display: none !important;
+}
+
+.fas.fa-heart {
+    color: red;
+}
+
 nav {
     background-color: rgb(255, 255, 255);
     position: fixed;
