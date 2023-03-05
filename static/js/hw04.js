@@ -25,12 +25,6 @@ const suggestions2Html = suggestion => {
     `
 }
 
-const comments2Html = comment => {
-return `
-
-    `;
-
-};
 
 // fetch data from your API endpoint:
 const displayStories = () => {
@@ -111,19 +105,20 @@ const displayStories = () => {
 const post2Html = post => {
     console.log("post2Html")
     return `
-    <section id = "posts">
+    <section id = "posts_${post.id}">
     <div id="post_top">
-        <h2>${ post.user.username} - ${post.current_user_like_id} - ${post.current_user_bookmark_id}</h2>
+        <h2>${ post.user.username} - Post ID: ${post.id} = Like ID: ${post.current_user_like_id} - Bookmark ID: ${post.current_user_bookmark_id}</h2>
         <h4>•••</h4>
     </div>
     <img src=${ post.image_url} id="post_pic" alt="post image of ${post.user.username}"/>
     <section class="post_bottom">
             <div id = "post_icons">
                 <div>
-                    <button class="like" onclick="toggleLike(${post.id}, ${post.current_user_like_id})"><i class="fa${ post.current_user_like_id ? 's' : 'r'} fa-heart"></i></button>
+                    <button id="like" onclick="toggleLike(${post.id}, ${post.current_user_like_id})" aria-label="Like / Unlike" aria-checked=${ post.current_user_like_id ? 'true' : 'false' }><i class="fa${ post.current_user_like_id ? 's' : 'r'} fa-heart"></i></button>
                     <i class="far fa-comment"></i>
                     <i class="far fa-paper-plane"></i>
                 </div>
+
                 ${  renderBookmarkButton(post)  }
             </div>
         <div>
@@ -131,28 +126,33 @@ const post2Html = post => {
         </div>
         <div class="post_descrip_div" id="likes">
         <h4 id="post_words" class="name">${ post.likes.length} like${post.likes.length != 1 ? 's' : ''}</h4>
-        <div class="modal-bg">${ getCommentButton(post) }</div>
-        
+        <div class="mcomments">${ getCommentButton(post) }</div>
+        <input type="text" placeholder="Add a Comment...">
+        <button onclick="addComment()">Add Comment</button>
         </section>
     </section>
     `;
 };
 
+const addComment = ev => {
+
+}
+
 //
-const modalElement = document.querySelector('.modal-bg');
+// const modalElement = document.querySelector('.modal-bg');
 
-const openModal = ev => {
-    console.log("open!")
-}
+// const openModal = ev => {
+//     console.log("open!")
+// }
 
-const closeModal = ev => {
-    console.log("close!")
-}
+// const closeModal = ev => {
+//     console.log("close!")
+// }
 
 const getCommentButton = (post) => {
     if (post.comments.length > 1) {
         return `
-        <button>View ${post.comments.length} Comments</button>
+        <button onclick="showModal()">View ${post.comments.length} Comments</button>
         <p>${ post.comments[post.comments.length-1].text }</p>
         `
     } else if (post.comments.length == 1){
@@ -165,9 +165,37 @@ const getCommentButton = (post) => {
 
 }
 
+const showModal = ev => {
+    fetch('/api/comments')
+    .then(response => response.json())
+    .then(comments => {
+        const html = comments.map(comments2Html).join('\n');
+        document.querySelector('.mcomments').innerHTML = html;
+
+    //for each comment, display a div tag with the info
+})};
+
+const comments2Html = comment => {
+return `
+    <img src="${ comment.thumb_url }" />
+    <p>${comment.text}</p>
+    <p>${comment.display_time}</p>
+    `;
+
+};
+
+
+
 const toggleLike = (postid, like_id) => {
+    //Lesson: you can write event.currentTarget anywhere, not just in a function parameter/input
+    const elem = event.currentTarget;
+    console.log("elem: ", elem)
     //has this already been liked
-    if (like_id == null){
+    console.log("postid: ", postid)
+    console.log("doc: ", document.getElementById('like'))
+    //console.log("is aria checked?: ", document.getElementById('like').getAttribute('aria-checked') === true)
+        //^This only retrieves the first post, not the current post
+    if (elem.getAttribute('aria-checked') === 'false') {
         console.log(postid)
         const url = `/api/posts/${postid}/likes/` 
         console.log(url)
@@ -177,9 +205,10 @@ const toggleLike = (postid, like_id) => {
         .then(response => response.json())
         .then(like => {
             console.log(like)
+            redrawPost(postid)
 
-            //requery server for POST
-            /////redraw the post -- do we need to do this without reloading page?
+            //requery API server for post that just changed
+            //redraw the post
             //document.querySelector
         })}
     else{
@@ -191,12 +220,64 @@ const toggleLike = (postid, like_id) => {
         .then(like => {
             console.log(like)
             /////redraw the post -- do we need to do this without reloading page?
+            redrawPost(postid)
             
         })
     }
-        
+}
+
+const stringToHTML = htmlString => {
+    var parser = new DOMParser()
+    var doc = parser.parseFromString(htmlString, 'text/html')
+    return doc.body.firstChild
 
 }
+const redrawPost = postid => {
+    //requery API server for post that just changed
+    //redraw the post
+    
+    fetch(`/api/posts/${ postid }`)
+        //////^may need ${} - when do you need and not need this?
+        .then(response => response.json())
+        .then(updatedPost => {
+            console.log("Updated Post: ", updatedPost)
+            const html = (updatedPost)
+            const newElement = stringToHTML(html)
+            const postElement = document.querySelector(`#post_${postid}`)
+            postElement.innerHTML = newElement.innerHTML
+        }
+        )
+
+
+}
+
+const handleLike = ev => {
+    console.log("Handle like functionality")
+    //get element the user just clicked on
+    const elem = ev.currentTarget;
+        
+    // if area-checked == 'true' then Delete Like Object
+    //else: Issue a POST request to create a Like Objects
+        //current user is the user liking, so don't need user data
+        //needs the post so it know what to like
+    if (elem.getAttribute('aria-checked') === 'true') {
+        unlikePost(elem);
+    } else {
+        likePost(elem);
+    }
+    //after everything is done, redraw post to reflect its new status
+}
+
+const unlikePost = elem => {
+    console.log('unlike post', elem);
+    fetch(`/api/posts/likes/`)
+};
+
+const likePost = elem => {
+    console.log('unlike post', elem);
+
+}
+
 // Issue post request
 // Then it responds, but post object is not in sync
 // Actually has more likes
@@ -254,14 +335,46 @@ const renderBookmarkButton = post => {
     //if bookmark has been unliked, then like
 }
 
-const handleLike = ev => {
-    console.log("Handle like functionality")
-    // if area-checked == 'true' then Delete Like Object
-    //else: Issue a POST request to create a Like Object
+const unbookmarkPost = elem => {
+    const postId = Number(elem.dataset.postId)
+    fetch(`/api/bookmarks/${elem.dataset.bookmarkId}`,{
+        method: "DELETE",
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        redrawPost(postId)
+    })
+}
+
+const bookmarkPost = elem => {
+    const postId = Number(elem.dataset.postId)
+    const postData = {
+        "post_id": postId
+    }
+    fetch("/api/bookmarks/", {
+        method: "DELETE",
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(postData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        redrawPost(postId)
+    })
 }
 
 const handleBookmark = ev => {
     console.log("Handle bookmark functionality")
+    const elem = ev.currentTarget
+    if (elem.getAttribute('aria-checked') === 'true') {
+        unbookmarkPost(elem)
+    } else {
+        bookmarkPost(elem)
+    }
 }
 
 const toggleFollow = (INSERT) => {
@@ -275,6 +388,7 @@ const displayPosts = () => {
     fetch('/api/posts')
         .then(response => response.json())
         .then(posts => {
+            //console.log("POSTS!!!!: ", posts)
             const html = posts.map(post2Html).join('\n');
             document.querySelector('#posts').innerHTML = html;
         })
