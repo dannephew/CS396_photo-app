@@ -111,7 +111,7 @@ const displayStories = () => {
 const post2Html = post => {
     console.log("post2Html")
     return `
-    <section id = "posts">
+    <section id = "posts_${post.id}">
     <div id="post_top">
         <h2>${ post.user.username} - ${post.current_user_like_id} - ${post.current_user_bookmark_id}</h2>
         <h4>•••</h4>
@@ -139,15 +139,15 @@ const post2Html = post => {
 };
 
 //
-const modalElement = document.querySelector('.modal-bg');
+// const modalElement = document.querySelector('.modal-bg');
 
-const openModal = ev => {
-    console.log("open!")
-}
+// const openModal = ev => {
+//     console.log("open!")
+// }
 
-const closeModal = ev => {
-    console.log("close!")
-}
+// const closeModal = ev => {
+//     console.log("close!")
+// }
 
 const getCommentButton = (post) => {
     if (post.comments.length > 1) {
@@ -249,18 +249,137 @@ const renderBookmarkButton = post => {
         </button>
         `
     }
-    //if bookmark has been liked, then unlike
-    //if bookmark has been unliked, then like
 }
+
+const handleBookmark = ev => {
+    console.log("Handle bookmark functionality")
+    const elem = ev.currentTarget
+    //^retrieves the attributes of the button 
+    if (elem.getAttribute('aria-checked') === 'true') {
+        console.log('unbookmark post')
+       unbookmarkPost(elem)
+    } else {
+        console.log('bookmark post')
+        bookmarkPost(elem)
+    }
+}
+
+const unbookmarkPost = elem => {
+    const postId = Number(elem.dataset.postId)
+    console.log("unbookmark post", elem)
+    //data-like-id can only be retrieved in camel case
+    //fetch is different in API docs -- also needs the post id
+    fetch(`/api/posts/bookmarks/${elem.dataset.bookmarkId}`, {
+        method: "DELETE",
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log("redraw post", data)
+        //redraw post
+        redrawPost(postId)
+    })
+    
+}
+
+const bookmarkPost = elem => {
+    const postId = Number(elem.dataset.postId)
+    console.log("bookmark post", elem)
+
+    const postData = {};
+    fetch(`/api/posts/bookmarks/`, {
+        method: "POST",
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(postData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log(data);
+        console.log("redraw post", data)
+        redrawPost(postId)
+    });
+
+}
+
 
 const handleLike = ev => {
     console.log("Handle like functionality")
     // if area-checked == 'true' then Delete Like Object
     //else: Issue a POST request to create a Like Object
+    const elem = ev.currentTarget
+        //^retrieves the attributes of the button 
+    if (elem.getAttribute('aria-checked') === 'true') {
+        console.log('unlike post')
+        unlikePost(elem)
+    } else {
+        console.log('like post')
+        likePost(elem)
+    }
 }
 
-const handleBookmark = ev => {
-    console.log("Handle bookmark functionality")
+const unlikePost = elem => {
+    const postId = Number(elem.dataset.postId)
+    console.log("unlike post", elem)
+    //data-like-id can only be retrieved in camel case
+    //fetch is different in API docs -- also needs the post id
+    fetch(`/api/posts/${elem.dataset.postId}/likes/${elem.dataset.likeId}`, {
+        method: "DELETE",
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log("redraw post", data)
+        //redraw post
+        redrawPost(postId)
+    })
+    
+}
+
+const likePost = elem => {
+    const postId = Number(elem.dataset.postId)
+    console.log("like post", elem)
+
+    const postData = {};
+    fetch(`/api/posts/${elem.dataset.postId}/likes/`, {
+        method: "POST",
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(postData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log(data);
+        console.log("redraw post", data)
+        redrawPost(postId)
+    });
+
+}
+
+const stringToHTML = htmlString => {
+    var parser = new DOMParser()
+    var doc = parser.parseFromString(str, 'text/html')
+    return doc.body.firstChild
+}
+
+const redrawPost = postId => {
+    //requery API for post that just changed
+    fetch(`/api/posts/${postId}`)
+        .then(response => response.json())
+        .then(updatedPost => {
+            console.log(updatedPost)
+            const html = post2Html(updatedPost)
+            //redraw post
+            const newElement = stringToHTML(html)
+            const postElement = document.querySelector(`#post_${postId}`)
+            postElement.innerHTML = newElement.innerHTML
+        })
 }
 
 const toggleFollow = (INSERT) => {
