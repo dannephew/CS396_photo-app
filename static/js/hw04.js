@@ -120,11 +120,11 @@ const post2Html = post => {
     <section class="post_bottom">
             <div id = "post_icons">
                 <div>
-                    <button class="like" onclick="toggleLike(${post.id}, ${post.current_user_like_id})"><i class="fa${ post.current_user_like_id ? 's' : 'r'} fa-heart"></i></button>
+                    ${  renderLikeButton(post)  }
+                    ${  renderBookmarkButton(post)  }
                     <i class="far fa-comment"></i>
                     <i class="far fa-paper-plane"></i>
                 </div>
-                ${  renderBookmarkButton(post)  }
             </div>
         <div>
             <p>${ post.caption }</p>
@@ -165,46 +165,45 @@ const getCommentButton = (post) => {
 
 }
 
-const toggleLike = (postid, like_id) => {
-    //has this already been liked
-    if (like_id == null){
-        console.log(postid)
-        const url = `/api/posts/${postid}/likes/` 
-        console.log(url)
+// const toggleLike = (postid, like_id) => {
+//     //has this already been liked
+//     if (like_id == null){
+//         console.log(postid)
+//         const url = `/api/posts/${postid}/likes/` 
+//         console.log(url)
 
-        fetch(url, {method: 'POST'})
-        //tell server we're using post request, not get request
-        .then(response => response.json())
-        .then(like => {
-            console.log(like)
+//         fetch(url, {method: 'POST'})
+//         //tell server we're using post request, not get request
+//         .then(response => response.json())
+//         .then(like => {
+//             console.log(like)
 
-            //requery server for POST
-            /////redraw the post -- do we need to do this without reloading page?
-            //document.querySelector
-        })}
-    else{
-        console.log("You've already liked this. Delete like")
-        const url = `/api/posts/${postid}/likes/${like_id}` 
-        fetch(url, {method: 'DELETE'})
-        //tell server we're using post request, not get request
-        .then(response => response.json())
-        .then(like => {
-            console.log(like)
-            /////redraw the post -- do we need to do this without reloading page?
+//             //requery server for POST
+//             /////redraw the post -- do we need to do this without reloading page?
+//             //document.querySelector
+//         })}
+//     else{
+//         console.log("You've already liked this. Delete like")
+//         const url = `/api/posts/${postid}/likes/${like_id}` 
+//         fetch(url, {method: 'DELETE'})
+//         //tell server we're using post request, not get request
+//         .then(response => response.json())
+//         .then(like => {
+//             console.log(like)
+//             /////redraw the post -- do we need to do this without reloading page?
             
-        })
-    }
-        
-
-}
+//         })
+//     }
+// }
 // Issue post request
 // Then it responds, but post object is not in sync
 // Actually has more likes
 //Must requery and get fresh copy of post object
 //invoke post2html
+
 const renderLikeButton = post => {
     if (post.current_user_like_id) {
-        `
+        return `
         <button
             data-like-id="${post.current_user_like_id}"
             data-post-id="${post.id}"
