@@ -21,16 +21,150 @@ const suggestions2Html = suggestion => {
     <img src="${ suggestion.thumb_url }" />
     <p>${ suggestion.username }</p>
     <p>Suggested for you</p>
-    <button>Follow</button>
+    ${renderFollowButton(suggestion)}
     `
 }
 
-const comments2Html = comment => {
-return `
+const renderFollowButton = suggestion => {
+    //get the user_id of the current account
+    //see if that user_id is in the list of users i follow
+    //if user is not currently following, then follow
+    //else, unfollow
 
-    `;
+    //get list of users i follow by fetching /api/following/ 
 
-};
+    // const following = getListofFollowers(suggestion)
+    // console.log("following: ", following)
+    // console.log("suggestion: ", suggestion)
+    // console.log("id: ", suggestion.id)
+    // if (following.includes(suggestion)) {
+    //     console.log("following does include")
+    //     return `
+    //     <button
+    //         data-following-id="${suggestion.id}"
+    //         aria-label="Follow / Unfollow"
+    //         aria-checked="true"
+    //         onclick="handleFollow(event);">
+    //         Unfollow Me!
+    //         </button>
+    //     `
+        //render follow button with aria-unchecked
+    //suggestions are ALWAYS people you don't currently follow
+    //for re-rendering, must account for switches
+        return `<button
+        data-following-id="${suggestion.id}"
+       aria-label="Follow / Unfollow"
+        aria-checked="false"
+       onclick="handleFollow(event);">
+           Follow Me!
+       </button>`
+}
+
+const handleFollow = ev => {
+    console.log("handleFollow")
+    console.log("ev: ", ev)
+    const elem = ev.currentTarget
+    console.log("ev.currentTarget: ", elem)
+
+    //Difference between ev and elem: 
+    //ev includes the position of the mouse on the screen
+    //elem is the actual button on the page that the mouse clicked
+    if (elem.getAttribute('aria-checked') === 'false') {
+        followSuggestion(elem)
+    } else {
+        unfollowSuggestion(elem)
+    }
+}
+
+const followSuggestion = elem => {
+    console.log("follow")
+    const followId = Number(elem.dataset.followingId)
+    const postData = {
+        "user_id": followId
+    };
+    
+    fetch("/api/following/", {
+            method: "POST",
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(postData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log(data);
+            redrawFollow(followId)
+        });
+    //fetch 
+        //update the database
+    //render
+}
+
+const unfollowSuggestion = elem => {
+    console.log("unfollow")
+    const followId = Number(elem.dataset.followingId)
+
+    //fetch
+        //update the database
+    fetch(`/api/following/${followId}`, {
+        method: "DELETE",
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log(data);
+        redrawFollow(followId)
+    });
+    //render
+}
+
+//////////fetch is not working. what api endpoint should i use? 
+const redrawFollow = followId => {
+    console.log("redraw Follow")
+    //query that following object
+    fetch(`/api/following/${followId}`, {
+        method: "GET"
+    })
+        .then(response => response.json())
+        .then(data => {
+            console.log(data)
+        })
+
+}
+
+// const redrawPost = postId => {
+//     //requery API for post that just changed
+//     fetch(`/api/posts/${postId}`)
+//         .then(response => response.json())
+//         .then(updatedPost => {
+//             console.log(updatedPost)
+//             const html = post2Html(updatedPost)
+//             //redraw post
+//             const newElement = stringToHTML(html)
+//             const postElement = document.querySelector(`#post_${postId}`)
+//             postElement.innerHTML = newElement.innerHTML
+//         })
+// }
+
+const getListofFollowers = suggestion => {
+    fetch('/api/following')
+    .then(response => response.json())
+    .then(data => {
+        console.log("DATA!!!: ", data)
+        return data
+        //data is an array of "following" objects, with info about each person i'm following
+        //Array(10)
+        // 0: 
+        // following: 
+        // {id: 1, first_name: 'Theresa', last_name: 'Moreno', username: 'theresa_moreno', email: 'theresa_moreno@hotmail.com', …}
+    })
+}
+
+
+
+
 
 // fetch data from your API endpoint:
 const displayStories = () => {
@@ -42,71 +176,6 @@ const displayStories = () => {
             document.querySelector('.stories').innerHTML = html;
         })
 };
-//get post data from API endpoint (/api/posts?limit-10)
-//when data arrives (after promises), build a bunch of HTML nested elements that become cards (i.e. a long string)
-//update the container and put the HTML inside it 
-
-{/* <section id = "posts">
-    <div id="post_top">
-        <h2>${ post.user.username}</h2>
-        <h4>•••</h4>
-    </div>
-    <img src=${ post.image_url} id="post_pic" alt="post image of ${post.user.username}"/>
-    <section class="post_bottom">
-        <section>
-            <div id = "post_icons">
-                <div>
-                    <i class="far fa-heart"></i>
-                    <i class="far fa-comment"></i>
-                    <i class="far fa-paper-plane"></i>
-                </div>
-                <i class="far fa-bookmark"></i>
-            </div>
-            <section id="post_descrip">
-                <div class="post_descrip_div" id="likes">
-                    <h4 id="post_words" class="name">${ post.likes.length} likes</h4>
-                </div>
-                <div class="post_descrip_div">
-                    <h5 class = "name" id="post_words">{{ c.get('user').get('username') }}</h5>
-                    <h5 id="post_words"> {{ c.get('title') }} </h5>
-                </div>
-                
-                ${ post.comments.length > 1 ?                     <h5 id="post_words"><a href="more">View all ${post.comments.length} comments</a></h5> 
-                    : post.comments.length >= 1 ? 
-                    for comment in post.comments: 
-                       <div class="post_descrip_div">
-                        <h5 class = "name" id="post_words">${comment.user.username}</h5>
-                       <h5 id="post_words"> ${ comment.text}</h5>
-                </div>    
-                    }
-
-                {% endif %}
-
-                {% if c.get('comments')|length >= 1 %}
-                <div class="post_descrip_div">
-                    <h5 class = "name" id="post_words">{{ c.get('comments')[0].get('user').get('username')}}</h5>
-                    <h5 id="post_words"> {{ c.get('comments')[0].get('text')}}</h5>
-                </div>                
-                {% endif %}
-
-                <div class="post_descrip_div">
-                    <h5 id="post_words">{{ c.get('display_time') }}</h5>
-                </div>
-            </section>
-
-        </section>
-
-        <section id="new_comment">
-            <div id=new_comment_left>
-                <i class="far fa-smile"></i>
-                <h4 id = "new_comment_left_words">Add a comment...</h4>
-            </div>
-            <div>
-                <h4>Post</h4>
-            </div>
-        </section>
-    </section>
-</section> */}
 
 const post2Html = post => {
     console.log("post2Html")
@@ -152,8 +221,7 @@ const post2Html = post => {
 const getCommentButton = (post) => {
     if (post.comments.length > 1) {
         return `
-        <button>View ${post.comments.length} Comments</button>
-        <p>${ post.comments[post.comments.length-1].text }</p>
+        <button>View all ${post.comments.length} Comments</button>
         `
     } else if (post.comments.length == 1){
         return `
@@ -268,8 +336,8 @@ const unbookmarkPost = elem => {
     const postId = Number(elem.dataset.postId)
     console.log("unbookmark post", elem)
     //data-like-id can only be retrieved in camel case
-    //fetch is different in API docs -- also needs the post id
-    fetch(`/api/posts/bookmarks/${elem.dataset.bookmarkId}`, {
+    /////fetch is different in API docs -- also needs the post id
+    fetch(`/api/bookmarks/${elem.dataset.bookmarkId}`, {
         method: "DELETE",
         headers: {
             'Content-Type': 'application/json',
@@ -288,8 +356,10 @@ const bookmarkPost = elem => {
     const postId = Number(elem.dataset.postId)
     console.log("bookmark post", elem)
 
-    const postData = {};
-    fetch(`/api/posts/bookmarks/`, {
+    const postData = {
+        "post_id": postId
+    };
+    fetch(`/api/bookmarks/`, {
         method: "POST",
         headers: {
             'Content-Type': 'application/json',
@@ -368,6 +438,7 @@ const stringToHTML = htmlString => {
     return doc.body.firstChild
 }
 
+///////////not working
 const redrawPost = postId => {
     //requery API for post that just changed
     fetch(`/api/posts/${postId}`)
