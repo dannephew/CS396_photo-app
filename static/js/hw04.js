@@ -425,6 +425,8 @@ const unbookmarkPost = elem => {
     .then(response => response.json())
     .then(data => {
         console.log("redraw post", data)
+        elem.setAttribute("aria-label", "Bookmark")
+        elem.setAttribute("aria-checked", "false")
         //redraw post
         redrawPost(postId)
     })
@@ -451,6 +453,8 @@ const bookmarkPost = elem => {
     .then(data => {
         console.log(data);
         console.log("redraw post", data)
+        elem.setAttribute("aria-label", "Unbookmark")
+        elem.setAttribute("aria-checked", "true")
         redrawPost(postId)
     });
 
@@ -489,6 +493,8 @@ const unlikePost = elem => {
         console.log("redraw post", data)
         //redraw post
         redrawPost(postId)
+        elem.setAttribute("aria-label", "Like")
+        elem.setAttribute("aria-checked", "false")
     })
     
 }
@@ -512,6 +518,8 @@ const likePost = elem => {
     .then(data => {
         console.log(data);
         console.log("redraw post", data)
+        elem.setAttribute("aria-label", "Unlike")
+        elem.setAttribute("aria-checked", "true")
         redrawPost(postId)
     });
 
