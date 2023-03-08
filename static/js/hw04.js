@@ -1,3 +1,6 @@
+let token;
+let baseURL = 'https://photo-app-secured.herokuapp.com/'
+
 const story2Html = story => {
     return `
         <div>
@@ -52,7 +55,7 @@ const renderFollowButton = suggestion => {
     //suggestions are ALWAYS people you don't currently follow
     //for re-rendering, must account for switches
         return `<button
-        data-following-id="${suggestion.id}"
+        data-user-id="${suggestion.id}"
        aria-label="Follow / Unfollow"
         aria-checked="false"
        onclick="handleFollow(event);">
@@ -78,27 +81,39 @@ const handleFollow = ev => {
 
 const followSuggestion = elem => {
     console.log("follow")
-    const followId = Number(elem.dataset.followingId)
+    //who is user?
+    const userId = Number(elem.dataset.userId)
     const postData = {
-        "user_id": followId
+        "user_id": userId
     };
-    
-    fetch("/api/following/", {
+
+
+
+    fetch("https://photo-app-secured.herokuapp.com/api/following/", {
             method: "POST",
             headers: {
                 'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + token
             },
             body: JSON.stringify(postData)
         })
         .then(response => response.json())
         .then(data => {
             console.log(data);
-            redrawFollow(followId)
+            //record of following attribute, insert new following instance into db
+            elem.setAttribute("data-following-id", data.id)
+            elem.innerHTML= "Follow"
+            elem.setAttribute("aria-checked", "true")
+            elem.setAttribute("aria-label", "Unfollow")
+            //redrawFollow(userId)
         });
     //fetch 
         //update the database
     //render
 }
+
+//comment
+//will need to redraw
 
 const unfollowSuggestion = elem => {
     console.log("unfollow")
@@ -106,26 +121,37 @@ const unfollowSuggestion = elem => {
 
     //fetch
         //update the database
-    fetch(`/api/following/${followId}`, {
+    fetch(`https://photo-app-secured.herokuapp.com/api/following/${followId}`, {
         method: "DELETE",
         headers: {
             'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
         }
     })
     .then(response => response.json())
     .then(data => {
         console.log(data);
-        redrawFollow(followId)
+        elem.setAttribute("data-following-id", '')
+        elem.innerHTML= "Follow Me!"
+        elem.setAttribute("aria-checked", "false")
+        elem.setAttribute("aria-label", "Follow")
     });
     //render
 }
 
 //////////fetch is not working. what api endpoint should i use? 
+//don't need to refetch
+//whether follow or unfollow, won't affect state of post
+//nothing new to render on page
 const redrawFollow = followId => {
     console.log("redraw Follow")
     //query that following object
-    fetch(`/api/following/${followId}`, {
-        method: "GET"
+    fetch(`https://photo-app-secured.herokuapp.com/api/following/${followId}`, {
+        method: "GET",
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+        }
     })
         .then(response => response.json())
         .then(data => {
@@ -149,7 +175,12 @@ const redrawFollow = followId => {
 // }
 
 const getListofFollowers = suggestion => {
-    fetch('/api/following')
+    fetch('https://photo-app-secured.herokuapp.com/api/following', {
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+        }
+    })
     .then(response => response.json())
     .then(data => {
         console.log("DATA!!!: ", data)
@@ -169,7 +200,12 @@ const getListofFollowers = suggestion => {
 // fetch data from your API endpoint:
 const displayStories = () => {
     console.log("displayStories")
-    fetch('/api/stories')
+    fetch('https://photo-app-secured.herokuapp.com/api/stories', {
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+        }
+    })
         .then(response => response.json())
         .then(stories => {
             const html = stories.map(story2Html).join('\n');
@@ -201,11 +237,51 @@ const post2Html = post => {
         <div class="post_descrip_div" id="likes">
         <h4 id="post_words" class="name">${ post.likes.length} like${post.likes.length != 1 ? 's' : ''}</h4>
         <div class="modal-bg">${ getCommentButton(post) }</div>
-        
+        <input type="text" value=""> <button data-post-id =${post.id} onclick=addComment(event)>Add Comment</button>
         </section>
     </section>
     `;
 };
+
+// const elem = ev.currentTarget
+//         //^retrieves the attributes of the button 
+//     if (elem.getAttribute('aria-checked') === 'true') {
+//         console.log('unlike post')
+//         unlikePost(elem)
+//     } else {
+//         console.log('like post')
+//         likePost(elem)
+//     }
+
+const addComment = ev => {
+    const elem = ev.currentTarget
+    console.log("hello world")
+    //get input
+    let input = ev.currentTarget.previousElementSibling.value
+    console.log(input)
+    const postId = Number(elem.dataset.postId)
+    const postData = {
+        "post_id": postId,
+        "text": input
+    };
+    
+    fetch("https://photo-app-secured.herokuapp.com/api/comments", {
+            method: "POST",
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + token
+            },
+            body: JSON.stringify(postData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log(data);
+            redrawPost(postId)
+        });
+
+}
+
+
 
 //
 // const modalElement = document.querySelector('.modal-bg');
@@ -222,6 +298,7 @@ const getCommentButton = (post) => {
     if (post.comments.length > 1) {
         return `
         <button>View all ${post.comments.length} Comments</button>
+        <p>Latest Comment: ${ post.comments[post.comments.length-1].text }</p>
         `
     } else if (post.comments.length == 1){
         return `
@@ -230,7 +307,6 @@ const getCommentButton = (post) => {
     } else {
         return ``
     }
-
 }
 
 // const toggleLike = (postid, like_id) => {
@@ -337,10 +413,13 @@ const unbookmarkPost = elem => {
     console.log("unbookmark post", elem)
     //data-like-id can only be retrieved in camel case
     /////fetch is different in API docs -- also needs the post id
-    fetch(`/api/bookmarks/${elem.dataset.bookmarkId}`, {
+
+    
+    fetch(`https://photo-app-secured.herokuapp.com/api/bookmarks/${elem.dataset.bookmarkId}`, {
         method: "DELETE",
         headers: {
             'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
         }
     })
     .then(response => response.json())
@@ -352,6 +431,7 @@ const unbookmarkPost = elem => {
     
 }
 
+
 const bookmarkPost = elem => {
     const postId = Number(elem.dataset.postId)
     console.log("bookmark post", elem)
@@ -359,10 +439,11 @@ const bookmarkPost = elem => {
     const postData = {
         "post_id": postId
     };
-    fetch(`/api/bookmarks/`, {
+    fetch(`https://photo-app-secured.herokuapp.com/api/bookmarks/`, {
         method: "POST",
         headers: {
             'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
         },
         body: JSON.stringify(postData)
     })
@@ -396,10 +477,11 @@ const unlikePost = elem => {
     console.log("unlike post", elem)
     //data-like-id can only be retrieved in camel case
     //fetch is different in API docs -- also needs the post id
-    fetch(`/api/posts/${elem.dataset.postId}/likes/${elem.dataset.likeId}`, {
+    fetch(`https://photo-app-secured.herokuapp.com/api/posts/likes/${elem.dataset.likeId}`, {
         method: "DELETE",
         headers: {
             'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
         }
     })
     .then(response => response.json())
@@ -415,11 +497,14 @@ const likePost = elem => {
     const postId = Number(elem.dataset.postId)
     console.log("like post", elem)
 
-    const postData = {};
-    fetch(`/api/posts/${elem.dataset.postId}/likes/`, {
+    const postData = {
+        post_id: postId
+    };
+    fetch(`https://photo-app-secured.herokuapp.com/api/posts/likes/`, {
         method: "POST",
         headers: {
             'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
         },
         body: JSON.stringify(postData)
     })
@@ -434,21 +519,45 @@ const likePost = elem => {
 
 const stringToHTML = htmlString => {
     var parser = new DOMParser()
-    var doc = parser.parseFromString(str, 'text/html')
+    var doc = parser.parseFromString(htmlString, 'text/html')
     return doc.body.firstChild
+}
+
+const getAccessToken = async (rootURL, username, password) => {
+    const postData = {
+        "username": username,
+        "password": password
+    };
+    const endpoint = `${rootURL}/api/token/`;
+    const response = await fetch(endpoint, {
+        method: "POST",
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+        },
+        body: JSON.stringify(postData)
+    });
+    const data = await response.json();
+    return data.access_token;
 }
 
 ///////////not working
 const redrawPost = postId => {
     //requery API for post that just changed
-    fetch(`/api/posts/${postId}`)
+    //
+    fetch(`https://photo-app-secured.herokuapp.com/api/posts/${postId}`, {
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+        }
+    })
         .then(response => response.json())
         .then(updatedPost => {
             console.log(updatedPost)
             const html = post2Html(updatedPost)
             //redraw post
             const newElement = stringToHTML(html)
-            const postElement = document.querySelector(`#post_${postId}`)
+            const postElement = document.querySelector(`#posts_${postId}`)
             postElement.innerHTML = newElement.innerHTML
         })
 }
@@ -461,7 +570,12 @@ const toggleFollow = (INSERT) => {
 
 const displayPosts = () => {
     console.log("displayPosts")
-    fetch('/api/posts')
+    fetch('https://photo-app-secured.herokuapp.com/api/posts', {
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+        }
+    })
         .then(response => response.json())
         .then(posts => {
             const html = posts.map(post2Html).join('\n');
@@ -470,7 +584,12 @@ const displayPosts = () => {
 };
 
 const displayUserProfile = () => {
-    fetch('/api/profile')
+    fetch('https://photo-app-secured.herokuapp.com/api/profile', {
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+        }
+    })
         .then(response => response.json())
         .then(user => {
             const html = user2Html(user);
@@ -480,7 +599,12 @@ const displayUserProfile = () => {
 };
 
 const displaySuggestedAccounts = () => {
-    fetch('/api/suggestions')
+    fetch('https://photo-app-secured.herokuapp.com/api/suggestions', {
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+        }
+    })
         .then(response => response.json())
         .then(suggestions => {
             const html = suggestions.map(suggestions2Html).join('\n');
@@ -489,7 +613,11 @@ const displaySuggestedAccounts = () => {
 };
 
 
-const initPage = () => {
+const initPage = async() => {
+    //get access token, then query 
+    token = await getAccessToken('https://photo-app-secured.herokuapp.com', 
+        'webdev',
+        'password')
     displayStories();
     displayPosts();
     displayUserProfile();
